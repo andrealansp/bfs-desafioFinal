@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import {
+  logger
+} from '../config/logger.js';
 import TransactionModel from '../models/TransactionModel.js';
 
 const db = TransactionModel;
@@ -8,10 +11,17 @@ const getPeriod = async (req, res, next) => {
   const {
     period
   } = req.query;
+
   try {
+    if (!req.query.period) {
+      return res.status(400).send({
+        message: 'Please provide a period',
+      });
+    }
     const result = await db.find({
       yearMonth: period
     });
+    logger.info('Sucesso - get: /:period');
     res.send(result);
   } catch (error) {
     next(error);
@@ -19,7 +29,11 @@ const getPeriod = async (req, res, next) => {
 };
 
 const saveTransaction = async (req, res, next) => {
-
+  if (!req.body.value) {
+    return res.status(400).send({
+      message: 'Please, provide a data to save on database.',
+    });
+  }
   const {
     description,
     value,
@@ -43,6 +57,7 @@ const saveTransaction = async (req, res, next) => {
   });
   try {
     const result = await newTransaction.save();
+    logger.info(`Sucesso - post: /`);
     res.send(result);
   } catch (error) {
     next(error);
@@ -54,6 +69,7 @@ const deleteTransaction = async (req, res, next) => {
     const result = await db.findByIdAndDelete({
       _id: id
     });
+    logger.info(`Sucesso - Delete: /:id`);
     res.send(result);
   } catch (error) {
     next(error);
@@ -65,7 +81,13 @@ const findTransactionByID = async (req, res, next) => {
     const result = await db.findById({
       _id: req.params.id
     });
-    !result ? res.send("Didn't finded any document !") : res.send(result)
+    if (!result) {
+      logger.info("INFO - Didn't finded any document !")
+      res.send("Didn't finded any document !");
+    } else {
+      logger.info(`sucesso - get: /findTransactionByDate/:date`);
+      res.send(result);
+    }
   } catch (error) {
     next(error);
   }
@@ -77,6 +99,7 @@ const findTransactionByDate = async (req, res, next) => {
     const result = await db.find({
       yearMonthDay: date
     })
+    logger.info(`Sucesso - get: /findTransactionByDate/:date`);
     res.send(result)
   } catch (error) {
     next(error);
@@ -92,6 +115,7 @@ const findTransactionByCategory = async (req, res, next) => {
         $options: 'i'
       }
     })
+    logger.info(`Sucesso - get: /findTransactionByCategory/:category`);
     res.send(result)
   } catch (error) {
     next(error);
@@ -106,15 +130,15 @@ const updateTransaction = async (req, res, next) => {
     }, req.body, {
       new: true,
     });
+    logger.info(`Sucesso - put: /:id`);
     res.send(result);
   } catch (error) {
     next(error)
   }
-
-
 };
 
-const handleErros = (err, req, res, next) => {
+const handleErros = (err, req, res) => {
+  logger.error(`Rota: ${req.method} - Error: ${err.message}`);
   res.status(400).send({
     error: err.message
   });
