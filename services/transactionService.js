@@ -64,6 +64,11 @@ const saveTransaction = async (req, res, next) => {
   }
 }
 const deleteTransaction = async (req, res, next) => {
+  if (!req.params.id) {
+    return res.status(400).send({
+      message: 'Please, provide the id of transaction.',
+    });
+  }
   let id = req.params.id;
   try {
     const result = await db.findByIdAndDelete({
@@ -77,6 +82,11 @@ const deleteTransaction = async (req, res, next) => {
 };
 
 const findTransactionByID = async (req, res, next) => {
+  if (!req.params.id) {
+    return res.status(400).send({
+      message: 'Please, provide the id of transaction.',
+    });
+  }
   try {
     const result = await db.findById({
       _id: req.params.id
@@ -94,6 +104,11 @@ const findTransactionByID = async (req, res, next) => {
 };
 
 const findTransactionByDate = async (req, res, next) => {
+  if (!req.params.date) {
+    return res.status(400).send({
+      message: 'Please, provide the date',
+    });
+  }
   const date = req.params.date;
   try {
     const result = await db.find({
@@ -107,6 +122,11 @@ const findTransactionByDate = async (req, res, next) => {
 }
 
 const findTransactionByCategory = async (req, res, next) => {
+  if (!req.params.category) {
+    return res.status(400).send({
+      message: 'Please, provide the category transaction.',
+    });
+  }
   const category = req.params.category;
   try {
     const result = await db.find({
